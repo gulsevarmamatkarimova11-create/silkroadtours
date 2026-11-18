@@ -5,6 +5,22 @@ const VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 export type TurnstileResult = { ok: true } | { ok: false; codes: string[] };
 
+/**
+ * Cloudflare's documented test secret keys always give the same answer
+ * (https://developers.cloudflare.com/turnstile/troubleshooting/testing/). They are answered locally,
+ * so tests and offline development don't depend on reaching challenges.cloudflare.com.
+ * A production secret key is never in this list, so production always verifies with Cloudflare.
+ */
+const TEST_SECRET_RESULTS: Record<string, TurnstileResult> = {
+  "1x0000000000000000000000000000000AA": { ok: true },
+  "2x0000000000000000000000000000000AA": { ok: false, codes: ["invalid-input-response"] },
+  "3x0000000000000000000000000000000AA": { ok: false, codes: ["timeout-or-duplicate"] },
+};
+
+export function isTurnstileTestSecret(secret: string): boolean {
+  return secret in TEST_SECRET_RESULTS;
+}
+
 export async function verifyTurnstile(
   token: string,
   secret: string,
@@ -13,6 +29,8 @@ export async function verifyTurnstile(
 ): Promise<TurnstileResult> {
   if (!secret) return { ok: false, codes: ["missing-input-secret"] };
   if (!token || token.length > 2048) return { ok: false, codes: ["invalid-input-response"] };
+  const testResult = TEST_SECRET_RESULTS[secret];
+  if (testResult) return testResult;
 
   const form = new FormData();
   form.append("secret", secret);
