@@ -24,7 +24,7 @@ You need:
 
 | Limit | Workers Free | Workers Paid | This website |
 |---|---|---|---|
-| Compressed Worker size | 3 MiB | 10 MiB | **1.81 MiB** (measured: 9,487 KiB raw / 1,852 KiB gzip) — fits both |
+| Compressed Worker size | 3 MiB | 10 MiB | **1.80 MiB** (measured: 9,543 KiB raw / 1,847 KiB gzip) — fits both |
 | CPU time per request | **10 ms** | 30 s (default) | Rendering a page with React, and checking an admin password (PBKDF2, 100,000 rounds), regularly need **more than 10 ms** |
 | Requests | 100,000 per day | 10 million per month included | Plenty either way |
 

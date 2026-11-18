@@ -84,7 +84,7 @@ Overview (KPIs, funnel, inbound/domestic split, top destinations, 30-day chart w
 - `docs/DEPLOYMENT.md` (click-by-click), `docs/GO_LIVE_CHECKLIST.md`.
 
 ### Worker size (final)
-`wrangler deploy --dry-run`: **9,487 KiB raw / 1,852 KiB gzip (1.81 MiB)** — under the Free plan's 3 MiB limit. **Recommendation: Workers Paid ($5/month)** anyway, because the Free plan's 10 ms CPU limit per request is too low for server-rendered React pages and PBKDF2 admin sign-in.
+`wrangler deploy --dry-run`: **9,543 KiB raw / 1,847 KiB gzip (1.80 MiB)** — under the Free plan's 3 MiB limit. **Recommendation: Workers Paid ($5/month)** anyway, because the Free plan's 10 ms CPU limit per request is too low for server-rendered React pages and PBKDF2 admin sign-in.
 
 ## Open items for the owner
 - Real prices, departure dates and seat counts (seed values are estimates).
