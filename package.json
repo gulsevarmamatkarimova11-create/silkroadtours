@@ -26,7 +26,9 @@
     "db:reset:local": "rm -rf .wrangler/state && npm run db:migrate:local && npm run db:seed:local",
     "test:unit": "tsx --test tests/*.test.ts",
     "test:smoke": "node scripts/smoke-test.mjs",
-    "setup:codespace": "bash scripts/codespace-setup.sh"
+    "setup:codespace": "bash scripts/codespace-setup.sh",
+    "test:e2e": "playwright test",
+    "test:lighthouse": "lhci autorun"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
