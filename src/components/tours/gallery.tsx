@@ -4,8 +4,9 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Expand } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import Lightbox from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
+import dynamic from "next/dynamic";
+
+const Lightbox = dynamic(() => import("./lightbox"), { ssr: false });
 
 export interface GalleryImage {
   src: string;
@@ -51,7 +52,7 @@ export function Gallery({ images, title }: { images: GalleryImage[]; title: stri
           </li>
         ))}
       </ul>
-      <Lightbox open={index >= 0} index={index} close={() => setIndex(-1)} slides={images.map((i) => ({ src: i.src, alt: i.alt }))} />
+      {index >= 0 && <Lightbox index={index} close={() => setIndex(-1)} slides={images.map((i) => ({ src: i.src, alt: i.alt }))} />}
     </section>
   );
 }

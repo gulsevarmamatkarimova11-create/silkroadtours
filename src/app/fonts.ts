@@ -5,17 +5,17 @@ import { Cormorant, Source_Sans_3 } from "next/font/google";
 // Only the Latin subset (which includes U+02BB) is preloaded; Cyrillic loads on demand via unicode-range.
 
 export const displayFont = Cormorant({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+  subsets: ["latin"],
   variable: "--font-cormorant",
   display: "swap",
-  preload: false,
+  preload: true,
   fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
 export const bodyFont = Source_Sans_3({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+  subsets: ["latin"],
   variable: "--font-source-sans",
   display: "swap",
-  preload: false,
+  preload: true,
   fallback: ["system-ui", "Segoe UI", "Arial", "sans-serif"],
 });

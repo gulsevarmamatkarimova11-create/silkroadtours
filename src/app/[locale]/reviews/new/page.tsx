@@ -21,7 +21,7 @@ export default async function NewReviewPage({ params, searchParams }: { params: 
     <div className="container-page max-w-3xl py-12">
       <SectionHeading as="h1" title={t("title")} text={t("intro")} />
       <div className="mt-10">
-        <ClientMessages namespaces={["reviewForm", "booking"]}>
+        <ClientMessages namespaces={["reviewForm", "booking", "errors", "forms"]}>
           <ReviewForm initialReference={ref?.slice(0, 20)} />
         </ClientMessages>
       </div>

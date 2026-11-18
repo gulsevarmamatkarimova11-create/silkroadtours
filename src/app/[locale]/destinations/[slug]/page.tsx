@@ -9,7 +9,7 @@ import { SmartImage } from "@/components/common/smart-image";
 import { LazyMap } from "@/components/maps/lazy-map";
 import { ArchFrame, GirihPattern, IkatDivider } from "@/components/ornament";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Gallery } from "@/components/tours/gallery";
+import nextDynamic from "next/dynamic";
 import { TourCard } from "@/components/tours/tour-card";
 import { buttonVariants } from "@/components/ui/button";
 import { getPublishedDestinationBySlug } from "@/db/queries/destinations";
@@ -23,6 +23,9 @@ import { localize } from "@/lib/localize";
 import { absoluteUrl, db, exchangeRates, pageMetadata, requestCurrency, siteUrl } from "@/lib/server/site";
 
 export const dynamic = "force-dynamic";
+
+/** Carousel + lightbox code is downloaded only on pages that actually have photos. */
+const Gallery = nextDynamic(() => import("@/components/tours/gallery").then((m) => m.Gallery));
 
 type Props = { params: Promise<{ locale: Locale; slug: string }> };
 

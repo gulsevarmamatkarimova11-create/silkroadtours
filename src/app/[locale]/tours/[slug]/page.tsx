@@ -1,4 +1,4 @@
-import { BedDouble, Bus, CalendarDays, Check, Footprints, Gauge, Languages, MapPin, Moon, Route, Star, Users, Utensils, X } from "lucide-react";
+import { BedDouble, Bus, CalendarDays, Footprints, Gauge, Languages, MapPin, Moon, Route, Users, Utensils } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -11,7 +11,7 @@ import { LazyMap } from "@/components/maps/lazy-map";
 import { ArchFrame, GirihPattern, IkatDivider } from "@/components/ornament";
 import { JsonLd } from "@/components/seo/json-ld";
 import { BookingCard, BookingProvider, MobileBookBar, type DepartureOption } from "@/components/tours/booking-card";
-import { Gallery } from "@/components/tours/gallery";
+import nextDynamic from "next/dynamic";
 import { ItineraryAccordion } from "@/components/tours/itinerary";
 import { TourCard } from "@/components/tours/tour-card";
 import { Badge } from "@/components/ui/misc";
@@ -27,6 +27,9 @@ import { formatMoney, quote, toMajor } from "@/lib/pricing";
 import { absoluteUrl, db, exchangeRates, pageMetadata, requestCurrency, siteUrl } from "@/lib/server/site";
 
 export const dynamic = "force-dynamic";
+
+/** Carousel + lightbox code is downloaded only on pages that actually have photos. */
+const Gallery = nextDynamic(() => import("@/components/tours/gallery").then((m) => m.Gallery));
 
 type Props = { params: Promise<{ locale: Locale; slug: string }> };
 
@@ -131,7 +134,7 @@ export default async function TourPage({ params }: Props) {
   };
 
   return (
-    <ClientMessages namespaces={["tour", "monthsShort"]}>
+    <ClientMessages namespaces={["tour", "monthsShort", "errors"]}>
       <BookingProvider
         slug={slug}
         currency={currency}
@@ -190,12 +193,12 @@ export default async function TourPage({ params }: Props) {
         <div className="border-b border-line bg-white">
           <dl className="container-page grid grid-cols-2 gap-x-6 gap-y-4 py-6 md:grid-cols-3 xl:grid-cols-6">
             {facts.map((f) => (
-              <div key={f.label} className="flex items-start gap-3">
-                <f.icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-turquoise-ink" />
-                <div>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">{f.label}</dt>
-                  <dd className="font-semibold text-ink">{f.value}</dd>
-                </div>
+              <div key={f.label} className="relative pl-8">
+                <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">
+                  <f.icon aria-hidden="true" className="absolute left-0 top-0.5 size-5 text-turquoise-ink" />
+                  {f.label}
+                </dt>
+                <dd className="font-semibold text-ink">{f.value}</dd>
               </div>
             ))}
           </dl>
@@ -310,23 +313,17 @@ export default async function TourPage({ params }: Props) {
               <section className="grid gap-8 md:grid-cols-2" aria-label={`${t("tour.included")} / ${t("tour.excluded")}`}>
                 <div>
                   <h2 className="text-2xl text-lapis-deep">{t("tour.included")}</h2>
-                  <ul className="mt-4 space-y-2.5">
+                  <ul className="check-list mt-4 space-y-2.5">
                     {tour.included.map((it, i) => (
-                      <li key={i} className="flex gap-3">
-                        <Check aria-hidden="true" className="mt-0.5 size-5 shrink-0 rounded-full bg-success/10 p-0.5 text-success" />
-                        <span>{localize(it, locale)}</span>
-                      </li>
+                      <li key={i}>{localize(it, locale)}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
                   <h2 className="text-2xl text-lapis-deep">{t("tour.excluded")}</h2>
-                  <ul className="mt-4 space-y-2.5">
+                  <ul className="cross-list mt-4 space-y-2.5">
                     {tour.excluded.map((it, i) => (
-                      <li key={i} className="flex gap-3">
-                        <X aria-hidden="true" className="mt-0.5 size-5 shrink-0 rounded-full bg-danger/10 p-0.5 text-danger" />
-                        <span>{localize(it, locale)}</span>
-                      </li>
+                      <li key={i}>{localize(it, locale)}</li>
                     ))}
                   </ul>
                 </div>

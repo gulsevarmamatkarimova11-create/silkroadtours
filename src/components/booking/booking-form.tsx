@@ -243,7 +243,7 @@ export function BookingForm({
             <Input type="date" min={minDate} {...fieldAria("preferredDate", err("preferredDate"), true)} {...register("preferredDate")} data-testid="book-date" />
           </Field>
         )}
-        <QuoteBox quote={quote} error={quoteError} adults={adults} childCount={children} />
+        <QuoteBox testId="book" quote={quote} error={quoteError} adults={adults} childCount={children} />
       </fieldset>
 
       {/* Step 2 — traveller */}
@@ -305,7 +305,7 @@ export function BookingForm({
             <dd>{values.phone} · {t(`channels.${values.contactChannel ?? "whatsapp"}`)}</dd>
           </div>
         </dl>
-        <QuoteBox quote={quote} error={quoteError} adults={adults} childCount={children} />
+        <QuoteBox testId="review" quote={quote} error={quoteError} adults={adults} childCount={children} />
         <Turnstile ref={turnstile} locale={locale} error={err("turnstileToken")} onToken={(tok) => setValue("turnstileToken", tok, { shouldValidate: !!tok })} />
         <p className="text-sm text-ink-muted">{t("consent")} {t("privacyNote")}</p>
       </fieldset>
@@ -338,14 +338,14 @@ export function BookingForm({
   );
 }
 
-function QuoteBox({ quote, error, adults, childCount }: { quote: Priced | null; error: string | null; adults: number; childCount: number }) {
+function QuoteBox({ quote, error, adults, childCount, testId }: { quote: Priced | null; error: string | null; adults: number; childCount: number; testId: string }) {
   const tt = useTranslations("tour");
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
   return (
     <div className="rounded-2xl border border-line bg-white p-4" aria-live="polite">
       {error ? (
-        <p role="alert" className="font-semibold text-danger" data-testid="book-quote-error">{error}</p>
+        <p role="alert" className="font-semibold text-danger" data-testid={`${testId}-quote-error`}>{error}</p>
       ) : quote ? (
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="text-sm text-ink-muted">
@@ -354,7 +354,7 @@ function QuoteBox({ quote, error, adults, childCount }: { quote: Priced | null; 
           </div>
           <p className="text-right">
             <span className="block text-sm text-ink-muted">{t("estimatedTotal")}</span>
-            <span className="text-2xl font-bold text-lapis-deep" data-testid="book-total">{formatMoney(quote.totalMinor, quote.currency, locale)}</span>
+            <span className="text-2xl font-bold text-lapis-deep" data-testid={`${testId}-total`}>{formatMoney(quote.totalMinor, quote.currency, locale)}</span>
           </p>
         </div>
       ) : (

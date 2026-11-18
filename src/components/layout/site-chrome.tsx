@@ -45,7 +45,7 @@ export async function SiteHeader({ locale, currency }: { locale: Locale; currenc
           </div>
         </div>
       </div>
-      <div className="border-b border-line bg-ivory/95 backdrop-blur supports-[backdrop-filter]:bg-ivory/85">
+      <div className="border-b border-line bg-ivory">
         <div className="container-page flex min-h-18 items-center justify-between gap-4">
           <Link href="/" className="shrink-0 rounded-lg" aria-label={`${tm("siteName")} — ${t("home")}`}>
             <Logo name={tm("siteName")} />

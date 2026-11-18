@@ -51,7 +51,7 @@ export default async function ServicePage({ params }: Props) {
       </section>
       <div className="container-page py-12">
         <div className="max-w-3xl">
-          <ClientMessages namespaces={["services", "booking"]}>
+          <ClientMessages namespaces={["services", "booking", "errors", "forms"]}>
             <ServiceRequestForm kind={service} destinations={destinations.map((d) => ({ slug: d.slug, name: localize(d.name, locale) }))} />
           </ClientMessages>
         </div>

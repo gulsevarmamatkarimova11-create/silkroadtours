@@ -10,9 +10,12 @@ import { formatDateLabel } from "@/lib/format";
 import { formatMoney, type QuoteResult } from "@/lib/pricing";
 import { todayInTashkent } from "@/validators/common";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogTitle, SheetContent } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/primitives";
+import dynamic from "next/dynamic";
+
+/** The date picker code is downloaded when a calendar popover is first opened. */
+const Calendar = dynamic(() => import("@/components/ui/calendar").then((m) => m.Calendar), { ssr: false });
 
 export interface DepartureOption {
   id: number;
@@ -400,7 +403,7 @@ export function MobileBookBar({ fromLabel }: { fromLabel: string }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ivory/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(20,35,92,0.3)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ivory px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(20,35,92,0.3)] lg:hidden">
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
           <p className="leading-tight">
             {quote ? (

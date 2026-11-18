@@ -144,6 +144,43 @@
     background-size: 120px 120px;
   }
 
+  /* Section-title ornament: draws in on scroll where scroll-driven animations exist; static otherwise. */
+  @supports (animation-timeline: view()) {
+    .drawn-rule path {
+      stroke-dasharray: 1;
+      animation: draw-rule linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+  }
+  @keyframes draw-rule {
+    from { stroke-dashoffset: 1; opacity: 0.4; }
+    to { stroke-dashoffset: 0; opacity: 1; }
+  }
+
+  /* Included / not-included checklists (CSS markers instead of one SVG per line). */
+  .check-list > li,
+  .cross-list > li {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .check-list > li::before,
+  .cross-list > li::before {
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    display: inline-flex;
+    width: 1.35rem;
+    height: 1.35rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .check-list > li::before { content: "✓"; color: var(--color-success); background: color-mix(in srgb, var(--color-success) 12%, transparent); }
+  .cross-list > li::before { content: "✕"; color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
+
   .skeleton {
     background: linear-gradient(90deg, var(--color-sand-soft), var(--color-sand), var(--color-sand-soft));
     animation: var(--animate-shimmer);

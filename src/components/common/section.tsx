@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { DrawnRule } from "./motion";
 
 export function SectionHeading({
   eyebrow,
@@ -36,5 +35,17 @@ export function SectionHeading({
       </div>
       {action}
     </div>
+  );
+}
+
+/**
+ * Ornament rule under section titles that "draws" itself in as it scrolls into view.
+ * Pure CSS (scroll-driven animation where supported, static elsewhere), so it costs no JavaScript.
+ */
+export function DrawnRule({ className, tone = "var(--color-saffron)" }: { className?: string; tone?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 240 16" className={cn("drawn-rule h-4 w-60", className)} fill="none">
+      <path d="M2 8H96M144 8H238M104 8l8-6 8 6-8 6zM120 8l8-6 8 6-8 6z" stroke={tone} strokeWidth="1.6" strokeLinejoin="round" pathLength={1} />
+    </svg>
   );
 }

@@ -2,19 +2,25 @@
 
 // Motion primitives (Framer Motion). LazyMotion + `m` keeps the runtime small, MotionConfig
 // honours prefers-reduced-motion, and only transform/opacity are animated (no layout shift).
-import { domAnimation, LazyMotion, m, MotionConfig, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useRef, type ReactNode } from "react";
+import { LazyMotion, m, MotionConfig, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+
+const loadFeatures = () => import("./motion-features").then((mod) => mod.default);
 
 export function MotionProvider({ children }: { children: ReactNode }) {
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={loadFeatures} strict>
       <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </LazyMotion>
   );
 }
 
-/** Slow fade-and-rise when the block scrolls into view. Never use on the LCP element. */
+/**
+ * Slow fade-and-rise when the block scrolls into view. Content is visible in the server HTML
+ * (good for LCP, crawlers and no-JS); only blocks that start below the fold are hidden after
+ * hydration and then revealed, so nothing on the first screen ever flickers.
+ */
 export function Reveal({
   children,
   className,
@@ -27,39 +33,36 @@ export function Reveal({
   as?: "div" | "section" | "li";
 }) {
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLElement>(null);
+  const [state, setState] = useState<"static" | "hidden" | "shown">("static");
+  useEffect(() => {
+    const el = ref.current;
+    if (reduce || !el || !("IntersectionObserver" in window)) return;
+    if (el.getBoundingClientRect().top < window.innerHeight) return;
+    setState("hidden");
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setState("shown");
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduce]);
   const Comp = as === "section" ? m.section : as === "li" ? m.li : m.div;
-  if (reduce) {
-    const Plain = as;
-    return <Plain className={className}>{children}</Plain>;
-  }
   return (
     <Comp
+      ref={ref as never}
       className={className}
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      initial={false}
+      animate={state === "hidden" ? { opacity: 0, y: 18 } : { opacity: 1, y: 0 }}
+      transition={state === "hidden" ? { duration: 0 } : { duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </Comp>
-  );
-}
-
-/** An ornament line that "draws" itself in (stroke-dashoffset), e.g. under section titles. */
-export function DrawnRule({ className, tone = "var(--color-saffron)" }: { className?: string; tone?: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 240 16" className={cn("h-4 w-60", className)} fill="none">
-      <m.path
-        d="M2 8H96M144 8H238M104 8l8-6 8 6-8 6zM120 8l8-6 8 6-8 6z"
-        stroke={tone}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0.4 }}
-        whileInView={{ pathLength: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
-      />
-    </svg>
   );
 }
 
