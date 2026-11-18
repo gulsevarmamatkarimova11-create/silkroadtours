@@ -10,3 +10,4 @@ out/
 next-env.d.ts
 drizzle/seed.sql
 .DS_Store
+.smoke-admin.json

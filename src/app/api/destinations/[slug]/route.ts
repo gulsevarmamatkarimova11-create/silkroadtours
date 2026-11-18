@@ -6,6 +6,9 @@ import { listPublishedTours } from "@/db/queries/tours";
 import { notFound, ok, parseQuery, route } from "@/lib/http";
 import { currencyQuerySchema } from "@/validators/public";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/destinations/[slug]?currency= — landing page data with linked tours and reviews. */
 export const GET = route<{ slug: string }>(async (req, { slug }) => {
   const { currency } = parseQuery(req, currencyQuerySchema);

@@ -5,6 +5,9 @@ import { ApiError, notFound, ok, parseId, route } from "@/lib/http";
 import { localize } from "@/lib/localize";
 import { notifyBooking } from "@/lib/notify";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** POST /api/admin/bookings/[id]/notify — re-send the Telegram alert (e.g. after fixing the bot config). */
 export const POST = route<{ id: string }>(async (req, { id }) => {
   await requireAdmin(req);

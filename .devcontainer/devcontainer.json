@@ -1,0 +1,20 @@
+{
+  "name": "Silk Road Tours",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "postCreateCommand": "bash scripts/codespace-setup.sh",
+  "forwardPorts": [3000, 8787],
+  "portsAttributes": {
+    "3000": { "label": "Website (next dev)", "onAutoForward": "notify" },
+    "8787": { "label": "Cloudflare preview", "onAutoForward": "notify" }
+  },
+  "containerEnv": {
+    "WRANGLER_SEND_METRICS": "false",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "hostRequirements": { "memory": "8gb" },
+  "customizations": {
+    "vscode": {
+      "extensions": ["bradlc.vscode-tailwindcss"]
+    }
+  }
+}

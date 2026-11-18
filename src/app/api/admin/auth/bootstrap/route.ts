@@ -4,6 +4,9 @@ import { timingSafeEqualString } from "@/lib/crypto";
 import { ApiError, conflict, created, forbidden, parseBody, route } from "@/lib/http";
 import { bootstrapAdminSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/admin/auth/bootstrap  (header: x-admin-secret: <ADMIN_SECRET>)
  * Creates the first owner account. Permanently disabled once any admin exists.

@@ -3,6 +3,9 @@ import { getBookingPublic } from "@/db/queries/bookings";
 import { notFound, ok, route } from "@/lib/http";
 import { isValidReference } from "@/lib/reference";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/bookings/[reference] — confirmation page data (no personal details). */
 export const GET = route<{ reference: string }>(async (_req, { reference }) => {
   const ref = reference.toUpperCase();

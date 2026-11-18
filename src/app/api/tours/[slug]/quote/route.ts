@@ -5,6 +5,9 @@ import { notFound, ok, parseQuery, route, unprocessable } from "@/lib/http";
 import { quote } from "@/lib/pricing";
 import { quoteQuerySchema } from "@/validators/booking";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/tours/[slug]/quote?adults&children&type&currency&departureId — live price for the booking card. */
 export const GET = route<{ slug: string }>(async (req, { slug }) => {
   const q = parseQuery(req, quoteQuerySchema);

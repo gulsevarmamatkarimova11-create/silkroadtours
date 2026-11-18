@@ -4,6 +4,9 @@ import { requireAdmin, requireOwner } from "@/lib/auth/guard";
 import { notFound, ok, parseBody, route } from "@/lib/http";
 import { contactSettingsSchema, exchangeRatesSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 const KEYS = ["exchange_rates", "contact"] as const;
 type Key = (typeof KEYS)[number];
 const isKey = (k: string): k is Key => (KEYS as readonly string[]).includes(k);

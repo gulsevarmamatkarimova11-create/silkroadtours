@@ -4,6 +4,9 @@ import { requireAdmin } from "@/lib/auth/guard";
 import { notFound, ok, parseBody, parseId, route } from "@/lib/http";
 import { bookingStatusUpdateSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/admin/bookings/[id] — full booking with tour, departure and notes timeline. */
 export const GET = route<{ id: string }>(async (req, { id }) => {
   await requireAdmin(req);

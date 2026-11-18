@@ -4,6 +4,9 @@ import { requireAdmin } from "@/lib/auth/guard";
 import { created, ok, parseBody, parseQuery, route } from "@/lib/http";
 import { reviewCreateSchema, reviewListQuerySchemaAdmin } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/admin/reviews?published&tourId&page — includes reviews awaiting moderation. */
 export const GET = route(async (req) => {
   await requireAdmin(req);

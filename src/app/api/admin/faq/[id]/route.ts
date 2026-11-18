@@ -4,6 +4,9 @@ import { requireAdmin } from "@/lib/auth/guard";
 import { noContent, ok, parseBody, parseId, route } from "@/lib/http";
 import { faqUpsertSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 export const PUT = route<{ id: string }>(async (req, { id }) => {
   await requireAdmin(req);
   const input = await parseBody(req, faqUpsertSchema);

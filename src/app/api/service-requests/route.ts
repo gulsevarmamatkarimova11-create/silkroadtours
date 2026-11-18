@@ -12,6 +12,9 @@ import { tooManySubmissions } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { serviceRequestSchema } from "@/validators/service-request";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** POST /api/service-requests — airport transfer, tailor-made tour, hotel/yurt reservation, guide hire. */
 export const POST = route(async (req) => {
   const input = await parseBody(req, serviceRequestSchema);

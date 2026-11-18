@@ -1,6 +1,6 @@
 # Phase 2: what has been verified, and what has not
 
-**Status: the backend is complete but not production-ready.** `npm install`, `next build`, the OpenNext build and a real deployment have **not** been run yet. The build environment used for Phase 2 could not install npm packages. Run the checks in section C before relying on any of this.
+**Status: the backend is complete; the checks in section C run in Codespaces/GitHub Actions. Not production-ready until they pass and deployment (next step) is done.** `npm install`, `next build`, the OpenNext build and a real deployment have **not** been run yet. The build environment used for Phase 2 could not install npm packages. Run the checks in section C before relying on any of this.
 
 ## A. Verified (run during Phase 2)
 
@@ -27,19 +27,17 @@
 - Real Telegram delivery, real Turnstile verification, and a real CBU request (all tested only with mocks).
 - `@cloudflare/workers-types` together with the DOM lib in `tsconfig`. If this causes type conflicts, run `npm run cf-typegen` and use the generated runtime types instead.
 
-## C. Commands to run on your machine
+## C. How the remaining checks are run
 
-```bash
-npm install
-npm run typecheck                 # must report 0 errors
-npm run db:check                  # schema parity (needs python3)
-npm run db:migrate:local && npm run db:seed:local
-npm run preview                   # OpenNext build + local Workers runtime
-# then, in another terminal:
-curl "http://localhost:8787/api/tours?audience=domestic&currency=UZS"
-curl "http://localhost:8787/api/tours/classic-silk-road-8-days/quote?adults=2&type=private&currency=EUR"
-```
-Phase 3 starts with these steps and fixes anything they report before building pages.
+Everything in section B is covered by tests that run in GitHub Codespaces and in GitHub Actions. Follow `docs/CODESPACES_GUIDE.md`:
+
+| Command | What it proves |
+|---|---|
+| `npm run test:unit` | Pricing, passwords, references, Telegram escaping, Turnstile/CBU handling, all form validators (with the real Zod), en/uz/ru message parity |
+| `npm run typecheck` | The whole project compiles with the real Next.js / Drizzle / Zod types |
+| `npm run test:smoke` (29 checks) | Every main API path against the running app and the local D1 database |
+| `npm run preview` + smoke test | The OpenNext Cloudflare Workers build runs and behaves the same |
+| GitHub Actions "Test" | All of the above, automatically, on every push |
 
 ## D. Known limitations by design
 

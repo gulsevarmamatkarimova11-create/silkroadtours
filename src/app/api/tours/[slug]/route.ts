@@ -4,6 +4,9 @@ import { getPublishedTourBySlug, priceTable, relatedTours } from "@/db/queries/t
 import { notFound, ok, parseQuery, route } from "@/lib/http";
 import { currencyQuerySchema } from "@/validators/public";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/tours/[slug]?currency= — full tour with itinerary, price table, upcoming departures, related tours. */
 export const GET = route<{ slug: string }>(async (req, { slug }) => {
   const { currency } = parseQuery(req, currencyQuerySchema);

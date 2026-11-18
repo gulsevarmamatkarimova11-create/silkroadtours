@@ -7,6 +7,9 @@ import { ApiError, assertSameOrigin, clientIp, ok, parseBody, route, tooManyRequ
 import { clearFailedLogins, isLoginLocked, recordFailedLogin } from "@/lib/rate-limit";
 import { loginSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** POST /api/admin/auth/login — sets the HttpOnly session cookie. 5 failed attempts per 15 min lock the email+IP. */
 export const POST = route(async (req) => {
   assertSameOrigin(req);

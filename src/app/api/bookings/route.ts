@@ -24,6 +24,9 @@ import { tooManySubmissions } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { bookingInputSchema } from "@/validators/booking";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/bookings
  * Turnstile → validation → server-side quote → insert (PENDING) → Telegram alert (after response) → reference.

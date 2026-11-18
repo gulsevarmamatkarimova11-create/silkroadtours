@@ -7,6 +7,9 @@ import { hashIp } from "@/lib/crypto";
 import { ApiError, clientIp, ok, parseBody, route } from "@/lib/http";
 import { passwordChangeSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** POST /api/admin/auth/password — change own password; signs out all other sessions. */
 export const POST = route(async (req) => {
   const admin = await requireAdmin(req);

@@ -4,6 +4,9 @@ import { requireAdmin } from "@/lib/auth/guard";
 import { noContent, notFound, ok, parseBody, parseId, route } from "@/lib/http";
 import { tourUpsertSchema } from "@/validators/admin";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/admin/tours/[id] — tour with destinations, itinerary, tiers and all departures. */
 export const GET = route<{ id: string }>(async (req, { id }) => {
   await requireAdmin(req);

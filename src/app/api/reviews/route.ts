@@ -4,6 +4,9 @@ import { ApiError, clientIp, created, ok, parseBody, parseQuery, route } from "@
 import { verifyTurnstile } from "@/lib/turnstile";
 import { reviewListQuerySchema, reviewSubmitSchema } from "@/validators/public";
 
+/** Always run per request: these handlers read D1 via the Cloudflare context. */
+export const dynamic = "force-dynamic";
+
 /** GET /api/reviews?tour&destination&limit — published reviews with average rating. */
 export const GET = route(async (req) => {
   const q = parseQuery(req, reviewListQuerySchema);
