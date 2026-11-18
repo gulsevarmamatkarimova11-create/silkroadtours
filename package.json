@@ -30,17 +30,17 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
-    "@opennextjs/cloudflare": "^1.3.0",
+    "@opennextjs/cloudflare": "^1.20.17",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.44.5",
+    "drizzle-orm": "^0.45.4",
     "framer-motion": "^12.23.12",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.542.0",
-    "next": "15.5.2",
+    "next": "15.5.29",
     "next-intl": "^4.3.5",
-    "react": "19.1.1",
+    "react": "19.1.10",
     "react-day-picker": "^9.9.0",
-    "react-dom": "19.1.1",
+    "react-dom": "19.1.10",
     "react-hook-form": "^7.62.0",
     "react-leaflet": "^5.0.0",
     "server-only": "^0.0.1",
@@ -48,7 +48,7 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250906.0",
+    "@cloudflare/workers-types": "^5.20261117.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/leaflet": "^1.9.20",
     "@types/node": "^22.18.1",
@@ -58,6 +58,6 @@
     "tailwindcss": "^4.1.13",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
-    "wrangler": "^4.35.0"
+    "wrangler": "^4.164.0"
   }
 }
