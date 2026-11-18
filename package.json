@@ -16,13 +16,15 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
-    "db:generate": "drizzle-kit generate",
+    "db:new-migration": "wrangler d1 migrations create silkroad-tours-db",
     "db:migrate:local": "wrangler d1 migrations apply silkroad-tours-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply silkroad-tours-db --remote",
     "db:seed:build": "tsx scripts/build-seed-sql.ts",
     "db:seed:local": "npm run db:seed:build && wrangler d1 execute silkroad-tours-db --local --file=drizzle/seed.sql",
     "db:seed:remote": "npm run db:seed:build && wrangler d1 execute silkroad-tours-db --remote --file=drizzle/seed.sql",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed:reset:local": "tsx scripts/build-seed-sql.ts --reset && wrangler d1 execute silkroad-tours-db --local --file=drizzle/seed.sql",
+    "db:check": "python3 scripts/check-schema-parity.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

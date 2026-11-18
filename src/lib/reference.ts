@@ -49,8 +49,3 @@ export async function withUniqueReference<T>(
   }
   throw lastError;
 }
-
-export function isD1UniqueViolation(err: unknown): boolean {
-  const msg = err instanceof Error ? `${err.message} ${String((err as { cause?: unknown }).cause ?? "")}` : String(err);
-  return msg.includes("UNIQUE constraint failed");
-}

@@ -1,6 +1,6 @@
 import { defineConfig } from "drizzle-kit";
 
-// `drizzle-kit generate` needs only schema + out.
+// `drizzle-kit is used only for `studio`; migrations are hand-written SQL (see docs/MANUAL_SETUP.md §10).
 // `drizzle-kit studio` against the remote D1 uses the d1-http driver and the
 // three CLOUDFLARE_* values from .env.
 const hasRemoteCreds =

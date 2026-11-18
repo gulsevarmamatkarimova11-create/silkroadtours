@@ -26,7 +26,7 @@ silkroad-tours/
 ├─ messages/{en,uz,ru}.json               UI strings (Phase 3)
 ├─ public/                                favicons, OG fallbacks, map markers
 ├─ scripts/
-│  ├─ seed-data/                          9 destinations, inbound + domestic tours, FAQ, reviews (Phase 2)
+│  ├─ seed-data/                          9 destinations, inbound + domestic tours, FAQ (Phase 2)
 │  └─ build-seed-sql.ts                   seed data → drizzle/seed.sql
 ├─ src/
 │  ├─ app/
@@ -104,7 +104,9 @@ All responses are JSON: `{ data }` on success, `{ error: { code, fields? } }` on
 | GET | `/api/tours/[slug]` | Full tour (itinerary, tiers, upcoming departures, reviews summary) |
 | GET | `/api/tours/[slug]/quote?adults&children&type&currency&departureId` | Live price for the sticky booking card |
 | GET | `/api/destinations` · `/api/destinations/[slug]` | Directory and landing-page data, with linked tours |
-| GET | `/api/reviews?tour&destination&limit` | Published reviews |
+| GET | `/api/reviews?tour&destination&limit` | Published reviews + average |
+| POST | `/api/reviews` | Guest review of a completed booking (reference + email), held for moderation |
+| GET | `/api/contact` | Agency name, phone, messengers, address |
 | GET | `/api/faq?category` | Travel guide FAQ |
 | GET | `/api/rates` | Current exchange rates (edge-cached for 10 min) |
 | POST | `/api/bookings` | Turnstile → validate → quote → insert PENDING → Telegram alert → `{ reference }` |
@@ -117,10 +119,13 @@ All responses are JSON: `{ data }` on success, `{ error: { code, fields? } }` on
 |---|---|---|
 | POST | `/api/admin/auth/bootstrap` | Create the first owner (requires `ADMIN_SECRET`; works only while no admins exist) |
 | POST | `/api/admin/auth/login` · `/logout` · GET `/me` | Session lifecycle, with login throttling |
+| POST | `/api/admin/auth/password` | Change own password (signs out other sessions) |
+| GET / POST · PATCH | `/api/admin/users[/id]` | Owners manage admin accounts (last owner protected) |
 | GET | `/api/admin/stats?from&to` | Totals, revenue estimate (USD), status funnel, top destinations, inbound/domestic ratio, daily series |
 | GET | `/api/admin/bookings?status&audience&q&from&to&page` | Filtered list |
 | GET / PATCH | `/api/admin/bookings/[id]` | Detail; status change (writes an audit note and adjusts departure seats) |
 | POST | `/api/admin/bookings/[id]/notes` | Internal note |
+| POST | `/api/admin/bookings/[id]/notify` · `/api/admin/service-requests/[id]/notify` | Resend the Telegram alert |
 | GET / PATCH | `/api/admin/service-requests[/id]` | List and update status/notes |
 | GET / POST | `/api/admin/tours` | List / create |
 | GET / PUT / DELETE | `/api/admin/tours/[id]` | Edit / delete (blocked if bookings exist; the tour is unpublished instead) |
@@ -128,9 +133,10 @@ All responses are JSON: `{ data }` on success, `{ error: { code, fields? } }` on
 | PUT | `/api/admin/tours/[id]/itinerary` · `/pricing` | Atomic replace (D1 batch) |
 | POST / PATCH / DELETE | `/api/admin/tours/[id]/departures[/depId]` | Manage dates |
 | CRUD | `/api/admin/destinations`, `/api/admin/faq` | CMS |
-| GET / PATCH / DELETE | `/api/admin/reviews[/id]` | Moderation (recomputes the tour rating) |
+| GET / POST · PATCH / DELETE | `/api/admin/reviews[/id]` | Moderation (recomputes the tour rating); add real Google/TripAdvisor reviews with a source link |
 | GET / PUT | `/api/admin/settings/[key]` | Contact info, exchange rates |
 | POST | `/api/admin/settings/rates/refresh` | Pull USD/EUR rates from cbu.uz |
+| POST | `/api/admin/settings/telegram/test` | Send a test message to the bookings group |
 
 ## 5. Environment
 
@@ -154,6 +160,6 @@ There is no `DATABASE_URL`, because D1 is attached as a binding.
 ## 7. Phase plan
 
 1. ✅ **Phase 1:** architecture, config, schema, pricing engine, validators.
-2. **Phase 2:** D1 migrations, query layer, all public and admin API routes, Telegram notifier, Turnstile, CBU rates, auth, and seed data (9 destinations with roughly 18 inbound and 10 domestic tours, FAQ, and reviews).
+2. ✅ **Phase 2 (code complete; build not yet verified, see PHASE2_VERIFICATION.md):** D1 migrations, query layer, all public and admin API routes, Telegram notifier, Turnstile, CBU rates, auth, and seed data (9 destinations, 11 inbound and 7 domestic tours, FAQ. No invented reviews; see MANUAL_SETUP.md §9).
 3. **Phase 3:** design system, i18n messages, all customer pages, search/filter, currency switcher, booking and service flows, maps.
 4. **Phase 4:** admin dashboard, GitHub Actions workflow, and exact deploy commands.

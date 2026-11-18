@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BOOKING_TYPES, CURRENCIES } from "../db/types";
+import { AUDIENCES, BOOKING_TYPES, CURRENCIES } from "../db/types";
 import { contactFields, futureDate, slug } from "./common";
 
 /** POST /api/bookings */
@@ -10,6 +10,8 @@ export const bookingInputSchema = contactFields
     destinationSlug: slug.optional(),
     departureId: z.number().int().positive().optional(),
     bookingType: z.enum(BOOKING_TYPES),
+    /** Only used for destination-only enquiries; for tours the audience comes from the tour. */
+    audience: z.enum(AUDIENCES).optional(),
     country: z.string().trim().max(80).optional(),
     preferredDate: futureDate,
     adults: z.number().int().min(1, { error: "min_one_adult" }).max(60),

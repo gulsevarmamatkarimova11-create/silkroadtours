@@ -148,6 +148,8 @@ export const tours = sqliteTable(
     check("tours_group_ck", sql`${t.minGroup} >= 1 AND ${t.maxGroup} >= ${t.minGroup}`),
     check("tours_duration_ck", sql`${t.durationDays} >= 1 AND ${t.durationNights} >= 0`),
     check("tours_child_pct_ck", sql`${t.childPricePercent} BETWEEN 0 AND 100`),
+    check("tours_audience_ck", sql`${t.audience} IN ('inbound','domestic')`),
+    check("tours_currency_ck", sql`${t.baseCurrency} IN ('USD','UZS','EUR')`),
   ],
 );
 
@@ -213,6 +215,7 @@ export const tourPriceTiers = sqliteTable(
       "price_tiers_any_price_ck",
       sql`${t.priceUsd} IS NOT NULL OR ${t.priceUzs} IS NOT NULL OR ${t.priceEur} IS NOT NULL`,
     ),
+    check("price_tiers_type_ck", sql`${t.bookingType} IN ('group','private')`),
   ],
 );
 
@@ -247,6 +250,8 @@ export const reviews = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     tourId: integer("tour_id").references(() => tours.id, { onDelete: "set null" }),
     destinationId: integer("destination_id").references(() => destinations.id, { onDelete: "set null" }),
+    /** Set when a guest reviews via their booking reference — one review per booking, marked verified. */
+    bookingId: integer("booking_id").references(() => bookings.id, { onDelete: "set null" }),
     authorName: text("author_name").notNull(),
     authorCountry: text("author_country"),
     rating: integer("rating").notNull(),
@@ -264,6 +269,7 @@ export const reviews = sqliteTable(
   (t) => [
     index("reviews_tour_idx").on(t.tourId, t.isPublished),
     index("reviews_published_idx").on(t.isPublished, t.createdAt),
+    uniqueIndex("reviews_booking_uq").on(t.bookingId),
     check("reviews_rating_ck", sql`${t.rating} BETWEEN 1 AND 5`),
   ],
 );
@@ -323,6 +329,7 @@ export const bookings = sqliteTable(
     index("bookings_email_idx").on(t.email),
     index("bookings_ip_idx").on(t.ipHash, t.createdAt),
     check("bookings_pax_ck", sql`${t.adults} >= 1 AND ${t.children} >= 0`),
+    check("bookings_status_ck", sql`${t.status} IN ('pending','confirmed','completed','cancelled')`),
   ],
 );
 

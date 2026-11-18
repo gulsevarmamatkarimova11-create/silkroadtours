@@ -155,6 +155,7 @@ export interface ExchangeRates {
 }
 
 export interface ContactSettings {
+  agencyName: string;
   phone: string;
   email: string;
   whatsapp: string;

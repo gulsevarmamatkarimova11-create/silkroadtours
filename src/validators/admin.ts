@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   ACCOMMODATION_TYPES,
+  ADMIN_ROLES,
   AUDIENCES,
   BOOKING_STATUSES,
   BOOKING_TYPES,
@@ -9,6 +10,8 @@ import {
   DIFFICULTIES,
   FAQ_CATEGORIES,
   MEALS,
+  REVIEW_SOURCES,
+  SERVICE_TYPES,
   TOUR_BADGES,
   TOUR_CATEGORIES,
   TRANSPORT_MODES,
@@ -28,11 +31,18 @@ export const localizedLong = z.object({
   ru: z.string().trim(),
 });
 
+/** Absolute https URL (R2, CDN) or a site-relative path under /public, e.g. "/images/tours/x.jpg". */
+export const mediaUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((v) => /^https:\/\/\S+$/.test(v) || /^\/[A-Za-z0-9._\-/]+$/.test(v), { error: "invalid_media_url" });
+
 const mediaItem = z.object({
-  url: z.url(),
+  url: mediaUrl,
   type: z.enum(["image", "video"]),
   alt: localizedLong,
-  poster: z.url().optional(),
+  poster: mediaUrl.optional(),
 });
 
 const month = z.number().int().min(1).max(12);
@@ -120,7 +130,7 @@ export const tourUpsertSchema = z
       .max(60),
     guideLanguages: z.array(z.string().length(2)).max(15),
     seasonMonths: z.array(month).max(12),
-    heroImage: z.url(),
+    heroImage: mediaUrl,
     gallery: z.array(mediaItem).max(60),
     seoTitle: localizedLong.nullable(),
     seoDescription: localizedLong.nullable(),
@@ -208,7 +218,7 @@ export const destinationUpsertSchema = z.object({
       z.object({
         name: localizedRequired,
         description: localizedLong,
-        image: z.url().optional(),
+        image: mediaUrl.optional(),
         lat: z.number().optional(),
         lng: z.number().optional(),
       }),
@@ -218,7 +228,7 @@ export const destinationUpsertSchema = z.object({
   bestMonths: z.array(month).max(12),
   lat: z.number().min(37).max(46),
   lng: z.number().min(55).max(74),
-  heroImage: z.url(),
+  heroImage: mediaUrl,
   gallery: z.array(mediaItem).max(60),
   seoTitle: localizedLong.nullable(),
   seoDescription: localizedLong.nullable(),
@@ -247,4 +257,86 @@ export const exchangeRatesSchema = z.object({
     UZS: z.number().positive().max(1_000_000),
     EUR: z.number().positive().max(100),
   }),
+});
+
+export const contactSettingsSchema = z.object({
+  agencyName: z.string().trim().min(2).max(120),
+  phone: z.string().trim().max(40),
+  email: z.union([z.email(), z.literal("")]),
+  whatsapp: z.string().trim().max(40),
+  telegram: z.string().trim().max(64),
+  address: localizedLong.or(z.object({ en: z.literal(""), uz: z.literal(""), ru: z.literal("") })),
+  licenseNumber: z.string().trim().max(80),
+});
+
+// ── Admin users ────────────────────────────────────────────────────────────
+
+export const adminUserCreateSchema = z.object({
+  email: z.email().transform((v) => v.toLowerCase()),
+  name: z.string().trim().min(2).max(80),
+  password: z.string().min(12, { error: "password_min_12" }).max(200),
+  role: z.enum(ADMIN_ROLES),
+});
+
+export const adminUserUpdateSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80).optional(),
+    role: z.enum(ADMIN_ROLES).optional(),
+    isActive: z.boolean().optional(),
+    password: z.string().min(12, { error: "password_min_12" }).max(200).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { error: "nothing_to_update" });
+
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1).max(200),
+  newPassword: z.string().min(12, { error: "password_min_12" }).max(200),
+});
+
+// ── Service requests ───────────────────────────────────────────────────────
+
+export const serviceRequestListQuerySchema = z.object({
+  type: z.enum(SERVICE_TYPES).optional(),
+  status: z.enum(BOOKING_STATUSES).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(10).max(100).default(25),
+});
+
+export const serviceRequestUpdateSchema = z
+  .object({
+    status: z.enum(BOOKING_STATUSES).optional(),
+    internalNotes: z.string().trim().max(4000).optional(),
+  })
+  .refine((v) => v.status !== undefined || v.internalNotes !== undefined, { error: "nothing_to_update" });
+
+// ── Reviews (admin) ────────────────────────────────────────────────────────
+
+export const reviewListQuerySchemaAdmin = z.object({
+  published: z.enum(["true", "false"]).optional(),
+  tourId: z.coerce.number().int().positive().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(10).max(100).default(25),
+});
+
+/** Admins enter real reviews received elsewhere (Google, TripAdvisor, email) with a link to the original. */
+export const reviewCreateSchema = z
+  .object({
+    tourId: z.number().int().positive().nullable(),
+    destinationId: z.number().int().positive().nullable(),
+    authorName: z.string().trim().min(2).max(80),
+    authorCountry: z.string().trim().max(80).nullable(),
+    rating: z.number().int().min(1).max(5),
+    title: z.string().trim().max(120).nullable(),
+    body: z.string().trim().min(10).max(3000),
+    language: z.string().trim().min(2).max(5),
+    source: z.enum(REVIEW_SOURCES),
+    sourceUrl: z.url().nullable(),
+    travelDate: isoDate.nullable(),
+    isPublished: z.boolean(),
+  })
+  .refine((r) => r.source === "site" || !!r.sourceUrl, { error: "source_url_required", path: ["sourceUrl"] });
+
+export const adminListQuerySchema = z.object({
+  q: z.string().trim().max(100).optional(),
+  audience: z.enum(AUDIENCES).optional(),
+  published: z.enum(["true", "false"]).optional(),
 });
