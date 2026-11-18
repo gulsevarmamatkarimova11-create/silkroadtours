@@ -1,6 +1,7 @@
 import "server-only";
 import { and, count, desc, eq, gte, lt, or, sql, type SQL } from "drizzle-orm";
 import { conflict, isUniqueViolation, notFound, unprocessable } from "@/lib/http";
+import { holdsSeats, STATUS_TRANSITIONS as TRANSITIONS } from "@/lib/booking-status";
 import { withUniqueReference } from "@/lib/reference";
 import { runBatch, tashkentDayStart } from "../batch";
 import type { Db } from "../client";
@@ -150,16 +151,6 @@ export async function getBookingAdmin(db: Db, id: number) {
     .orderBy(desc(bookingNotes.createdAt), desc(bookingNotes.id));
   return { ...booking, notes };
 }
-
-/** Which status changes are allowed. Completed bookings can only be re-opened as confirmed (corrections). */
-const TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["completed", "cancelled", "pending"],
-  completed: ["confirmed"],
-  cancelled: ["pending", "confirmed"],
-};
-
-const holdsSeats = (s: BookingStatus) => s === "confirmed" || s === "completed";
 
 async function adjustSeats(db: Db, departureId: number, delta: number): Promise<boolean> {
   if (delta > 0) {
