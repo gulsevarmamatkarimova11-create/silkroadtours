@@ -74,7 +74,7 @@ Try these addresses too (add them after the `.app.github.dev` part):
 - `/api/tours/classic-silk-road-8-days/quote?adults=2&type=private&currency=EUR`: a price in euros
 - `/api/destinations`: the 9 regions
 
-> The home page `/` shows "404" for now. That is expected: the website pages are built in Phase 3.
+> Remove `/api/health` from the address to see the website itself (it opens `/en`). Try `/uz` and `/ru`, and the admin panel at `/admin` (sign in with the test admin the smoke test creates — its password is in the file `.smoke-admin.json`).
 
 **Test 4 — Full end-to-end test.** Open a **second** terminal (click **+** in the terminal panel) and run:
 ```bash
@@ -93,7 +93,14 @@ BASE_URL=http://localhost:8787 npm run test:smoke
 ```
 ✅ Expected: the same result as Test 4. This proves the Cloudflare Workers build works.
 
-**Test 6 — Automatic check on GitHub.** After any `git push`, open your repository on github.com → **Actions** tab. The **Test** workflow repeats Tests 1, 2, 4 and 5 by itself. ✅ Expected: a green tick.
+**Test 5b — Browser tests (optional, takes ~3 minutes).** With `npm run preview` still running, in the second terminal:
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+✅ Expected: all tests passed. They click through the website on a desktop and a phone-sized screen (languages, currency, filters, a full booking, an airport transfer, the admin confirming a booking) and check accessibility.
+
+**Test 6 — Automatic check on GitHub.** After any `git push`, open your repository on github.com → **Actions** tab. The **Test** workflow repeats Tests 1, 2, 4, 5 and 5b by itself and also checks the Lighthouse speed budgets. ✅ Expected: a green tick.
 
 ## Part D — Optional: test the Telegram alerts
 
@@ -120,4 +127,4 @@ Stop the Codespace so it stops using your free hours: github.com → **Code** �
 
 ---
 
-**After all tests pass**, tell Claude. The next step is deployment to Cloudflare Workers + D1: creating the real database, setting the production secrets yourself, a deploy workflow, and creating your admin account. That comes after testing on purpose.
+**After all tests pass**, follow `docs/DEPLOYMENT.md` to put the site on Cloudflare.

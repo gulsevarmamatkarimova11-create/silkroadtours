@@ -1,3 +1,5 @@
+> **Historical record of Phase 2.** Everything listed under "not verified yet" has since been verified — see `docs/PROGRESS.md`.
+
 # Phase 2: what has been verified, and what has not
 
 **Status: the backend is complete; the checks in section C run in Codespaces/GitHub Actions. Not production-ready until they pass and deployment (next step) is done.** `npm install`, `next build`, the OpenNext build and a real deployment have **not** been run yet. The build environment used for Phase 2 could not install npm packages. Run the checks in section C before relying on any of this.

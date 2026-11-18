@@ -1,23 +1,32 @@
 # Silk Road Tours — booking platform
 
-Next.js 15 on Cloudflare Workers (OpenNext) with a D1 database, for an inbound and domestic tour agency in Uzbekistan. The site is in English, Uzbek and Russian and shows prices in USD, UZS or EUR.
+Website and admin panel for a tour agency in Jizzakh, Uzbekistan, serving international travellers and residents of Uzbekistan. Next.js 15 on Cloudflare Workers (OpenNext) with a D1 database. The site is in English, Uzbek and Russian and shows live prices in USD, UZS or EUR; the admin panel is in Uzbek (default) and English.
 
-**Status:** Phases 1–2 (architecture, database, API, Telegram alerts, admin auth, seed data) are complete and ready for testing. The customer pages (Phase 3) and admin dashboard (Phase 4) come next.
+**Status:** MVP complete and deploy-ready (not deployed). See `docs/PROGRESS.md` for test results and `docs/DEPLOYMENT.md` to go live.
 
 ## Start here
-**Beginners: test everything in the browser with GitHub Codespaces. Follow `docs/CODESPACES_GUIDE.md`.**
+- **Testing in the browser (beginners):** `docs/CODESPACES_GUIDE.md`
+- **Going live:** `docs/DEPLOYMENT.md`, then `docs/GO_LIVE_CHECKLIST.md`
 
 ```bash
 npm run setup:codespace   # install, local secrets, local database + seed (automatic in Codespaces)
+npm run dev               # site on :3000  (/en, /uz, /ru; admin at /admin)
 npm run test:unit         # unit tests
 npm run typecheck         # TypeScript
-npm run dev               # app on :3000
-npm run test:smoke        # end-to-end checks against the running app
+npm run db:check          # migrations ↔ schema.ts
+npm run test:smoke        # API end-to-end checks against the running app
 npm run preview           # Cloudflare Workers build on :8787
+npm run test:e2e          # Playwright e2e + accessibility (against :8787)
 ```
 
 ## Documents
-- `docs/CODESPACES_GUIDE.md`: step-by-step testing for beginners
-- `docs/ARCHITECTURE.md`: stack, folder structure, data model, every API endpoint
-- `docs/MANUAL_SETUP.md`: D1, secrets, Telegram bot, Turnstile, first admin, photos, content review
-- `docs/PHASE2_VERIFICATION.md`: what has been verified so far
+| File | What it covers |
+|---|---|
+| `docs/ARCHITECTURE.md` | Stack, folders, data model, every API endpoint |
+| `docs/design/DESIGN_SYSTEM.md` | The "Modern Silk Road" design system: palette, type, ornaments, motion, performance budget |
+| `docs/design/COMPETITOR_ANALYSIS.md` | 13 competitor and benchmark sites compared |
+| `docs/DEPLOYMENT.md` | Click-by-click deployment to Cloudflare |
+| `docs/GO_LIVE_CHECKLIST.md` | Content, security, SEO, analytics and backups before launch |
+| `docs/MANUAL_SETUP.md` | Telegram bot, photos, content review, schema changes |
+| `docs/PROGRESS.md` | What was built, test results, decisions, open items |
+| `docs/CODESPACES_GUIDE.md` | Testing everything in a browser-based Codespace |

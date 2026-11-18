@@ -2,6 +2,8 @@
 
 Everything below needs your accounts, secrets or content. None of it can be done from the code.
 
+> **Deploying for the first time?** Follow `docs/DEPLOYMENT.md` — it covers sections 1, 2, 4, 5 and 7 below step by step, including how to do them from the Cloudflare and GitHub websites. This file stays as the technical reference.
+
 ## 1. Cloudflare D1 database
 
 ```bash
@@ -36,7 +38,7 @@ In `wrangler.toml` `[vars]`, set `SITE_URL` to your real domain. It is used for 
 1. In Telegram, open **@BotFather**, send `/newbot` and copy the token. That is `TELEGRAM_BOT_TOKEN`.
 2. Create a group for the booking team and add the bot to it.
 3. Send any message in the group, then open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy `chat.id`. For groups it is a negative number such as `-1001234567890`. That is `TELEGRAM_CHAT_ID`.
-4. After deploying and signing in, call `POST /api/admin/settings/telegram/test` (Phase 4 adds a button for this). A test message should appear in the group.
+4. After deploying and signing in, open **Admin → Sozlamalar (Settings) → Telegram** and click **Telegramga sinov xabari**. A test message should appear in the group.
 
 If a booking alert fails, the booking is still saved. `telegram_notified_at` stays empty, and you can resend with `POST /api/admin/bookings/{id}/notify`.
 
@@ -58,15 +60,17 @@ This works only while there are no admins. Afterwards, owners add staff through 
 
 ## 6. Agency contact details
 
-The seed stores the agency name "Silk Road Tours" and the address "Jizzakh, Uzbekistan". Phone, email, WhatsApp, Telegram and licence number are left empty on purpose. Set the real values with `PUT /api/admin/settings/contact` (a form in Phase 4). Empty fields are hidden on the site. They are not shown as placeholders.
+The seed stores the agency name "Silk Road Tours" and the address "Jizzakh, Uzbekistan". Phone, email, WhatsApp, Telegram and licence number are left empty on purpose. Set the real values in **Admin → Settings → Contact details**. Empty fields are hidden on the site (including the floating WhatsApp/Telegram buttons); they are never shown as placeholders.
 
 ## 7. Exchange rates
 
-The seed uses USD = 11,973.44 UZS (the Central Bank rate of 13 Nov 2026) and USD = 0.86 EUR. After deploying, refresh from the Central Bank of Uzbekistan with `POST /api/admin/settings/rates/refresh`, or enter rates manually.
+The seed uses USD = 11,973.44 UZS (the Central Bank rate of 13 Nov 2026) and USD = 0.86 EUR. After deploying, click **Admin → Settings → Exchange rates → Refresh from Central Bank**, or enter rates manually there.
 
 ## 8. Photos (62 images)
 
-The seed refers to images under `/public/images/...`. The full list is in `drizzle/seed-images.txt` (9 destination heroes, 36 destination gallery photos, 18 tour heroes). Use your own photos or properly licensed ones. JPEG files about 1600 px wide are enough. You can also point any image to an `https://` URL (for example a Cloudflare R2 public bucket) in the admin panel.
+The seed refers to images under `/public/images/...`. The full list is in `drizzle/seed-images.txt` (9 destination heroes, 36 destination gallery photos, 18 tour heroes). Use your own photos or properly licensed ones. JPEG files about 1600 px wide (under 300 KB) are enough; warm golden-hour light, people, crafts and food alongside monuments. You can also point any image to an `https://` URL (for example a Cloudflare R2 public bucket) in the admin **Media** tab.
+
+Until a photo exists the site shows a branded ornament placeholder with the place name, so nothing looks broken. Local files are detected when the site is built: after adding files under `public/images/`, commit them and the next deploy picks them up.
 
 ## 9. Review the seed content
 
