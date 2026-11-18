@@ -326,7 +326,8 @@
     "quoteUpdating": "Updating price…",
     "converted": "Approximate: converted at today's rate.",
     "fromPrice": "From {price}",
-    "askQuestion": "Ask a question"
+    "askQuestion": "Ask a question",
+    "dateHintShort": "You can also pick the date on the next step."
   },
   "destinations": {
     "metaTitle": "Destinations in Uzbekistan",

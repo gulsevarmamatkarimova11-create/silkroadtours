@@ -326,7 +326,8 @@
     "quoteUpdating": "Narx yangilanmoqda…",
     "converted": "Taxminiy: bugungi kurs boʻyicha hisoblangan.",
     "fromPrice": "{price} dan",
-    "askQuestion": "Savol berish"
+    "askQuestion": "Savol berish",
+    "dateHintShort": "Sanani keyingi qadamda ham tanlashingiz mumkin."
   },
   "destinations": {
     "metaTitle": "Oʻzbekistondagi yoʻnalishlar",

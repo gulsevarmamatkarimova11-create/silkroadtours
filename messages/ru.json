@@ -326,7 +326,8 @@
     "quoteUpdating": "Пересчитываем цену…",
     "converted": "Ориентировочно: пересчитано по текущему курсу.",
     "fromPrice": "От {price}",
-    "askQuestion": "Задать вопрос"
+    "askQuestion": "Задать вопрос",
+    "dateHintShort": "Дату можно выбрать и на следующем шаге."
   },
   "destinations": {
     "metaTitle": "Направления по Узбекистану",
