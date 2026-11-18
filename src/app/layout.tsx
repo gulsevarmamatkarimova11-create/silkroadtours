@@ -1,13 +1,10 @@
 import type { ReactNode } from "react";
+import "./globals.css";
 
 /**
- * Minimal root layout so `next build` succeeds while the site only has API routes.
- * Phase 3 replaces this with the localized layout under app/[locale]/.
+ * The customer site (app/[locale]/layout.tsx) and the admin panel (app/admin/layout.tsx)
+ * each render their own <html> element with the right `lang`, so this root layout only passes through.
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
+  return children;
 }
