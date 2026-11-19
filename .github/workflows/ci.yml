@@ -80,7 +80,8 @@ jobs:
           # workerd's preview does not compress responses; Cloudflare's edge does in production.
           node scripts/compress-proxy.mjs > proxy.log 2>&1 &
           for i in $(seq 1 20); do curl -sf http://localhost:8788/api/health > /dev/null && break; sleep 1; done
-          npx lhci autorun
+          npx lhci autorun || { node scripts/lighthouse-summary.mjs; exit 1; }
+          node scripts/lighthouse-summary.mjs
 
       - name: Upload test reports
         if: failure()
@@ -92,7 +93,8 @@ jobs:
             test-results/
             .lighthouseci/
           retention-days: 7
+          include-hidden-files: true
 
       - name: Show app log on failure
         if: failure()
-        run: cat preview.log || true
+        run: tail -n 150 preview.log || true
