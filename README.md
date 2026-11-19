@@ -6,6 +6,7 @@ Website and admin panel for a tour agency in Jizzakh, Uzbekistan, serving intern
 
 ## Start here
 - **Testing in the browser (beginners):** `docs/CODESPACES_GUIDE.md`
+- **See it online without deploying:** GitHub → Actions → **Preview (test link)** → Run workflow. A temporary `https://….trycloudflare.com` link appears in a new issue and stays online for the chosen minutes (demo data, nothing is created in Cloudflare). Admin: `admin@silkroad.test` with the password stored in the repository secret `PREVIEW_ADMIN_PASSWORD` (the repository is public, so the password never appears in logs or issues).
 - **Going live:** `docs/DEPLOYMENT.md`, then `docs/GO_LIVE_CHECKLIST.md`
 
 ```bash

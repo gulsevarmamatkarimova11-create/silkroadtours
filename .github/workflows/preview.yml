@@ -1,0 +1,182 @@
+# Temporary online test site — for checking the website and admin panel by eye before deploying.
+#
+# GitHub → Actions → "Preview (test link)" → Run workflow.
+# It builds the site exactly as Cloudflare would run it, fills a throw-away database with the demo
+# catalogue, and opens a temporary public https://….trycloudflare.com link (Cloudflare Quick Tunnel:
+# free, no account, nothing is created in your Cloudflare account). The link is posted in a new
+# GitHub issue, and the site switches off after the chosen number of minutes. Data typed into the
+# test site disappears when it switches off; no Telegram messages are sent.
+#
+# Admin sign-in (this repository is public, so a password must never appear in logs or issues):
+#   - Recommended: add a repository secret PREVIEW_ADMIN_PASSWORD (min 12 characters) once.
+#     Every preview then has the admin  admin@silkroad.test  with that password.
+#   - Or pass admin_password_hash: a PBKDF2 hash made by `npx tsx scripts/hash-password.ts`
+#     (the hash is safe to show; the password itself is not).
+name: Preview (test link)
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "How long the test site stays online (10–180 minutes)"
+        type: number
+        default: 60
+      admin_password_hash:
+        description: "Optional PBKDF2 hash of the test admin password (never the password itself)"
+        type: string
+        required: false
+
+concurrency:
+  group: preview
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    env:
+      WRANGLER_SEND_METRICS: "false"
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SITE_URL: http://localhost:8787
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      ADMIN_EMAIL: admin@silkroad.test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Build for Cloudflare Workers (OpenNext)
+        run: npx opennextjs-cloudflare build
+
+      - name: Demo database (9 destinations, 18 tours, FAQ)
+        run: |
+          npm run db:migrate:local
+          npm run db:seed:local
+
+      - name: Test-only secrets
+        run: |
+          {
+            echo "TELEGRAM_BOT_TOKEN="
+            echo "TELEGRAM_CHAT_ID="
+            echo "SESSION_SECRET=$(openssl rand -base64 32)"
+            echo "ADMIN_SECRET=$(openssl rand -base64 32)"
+            echo "TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA"
+          } > .dev.vars
+
+      - name: Start the site
+        run: |
+          npx opennextjs-cloudflare preview > preview.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8787/api/health > /dev/null; then echo "Site is up"; exit 0; fi
+            sleep 2
+          done
+          echo "The site did not start:"; tail -n 80 preview.log; exit 1
+
+      - name: Create the test admin
+        id: admin
+        env:
+          PREVIEW_ADMIN_PASSWORD: ${{ secrets.PREVIEW_ADMIN_PASSWORD }}
+          HASH: ${{ inputs.admin_password_hash }}
+        run: |
+          if [ -n "$PREVIEW_ADMIN_PASSWORD" ]; then
+            secret=$(grep '^ADMIN_SECRET=' .dev.vars | cut -d= -f2-)
+            body=$(node -e 'console.log(JSON.stringify({ email: process.env.ADMIN_EMAIL, name: "Test admin", password: process.env.PREVIEW_ADMIN_PASSWORD }))')
+            code=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8787/api/admin/auth/bootstrap \
+              -H "content-type: application/json" -H "x-admin-secret: $secret" -d "$body")
+            [ "$code" = "201" ] || { echo "::error::Could not create the admin (HTTP $code). PREVIEW_ADMIN_PASSWORD must be at least 12 characters."; exit 1; }
+            echo "source=secret" >> "$GITHUB_OUTPUT"
+          elif [ -n "$HASH" ]; then
+            if ! printf '%s' "$HASH" | grep -Eq '^pbkdf2-sha256\$100000\$[A-Za-z0-9+/=]{16,64}\$[A-Za-z0-9+/=]{40,64}$'; then
+              echo "::error::admin_password_hash is not a valid hash. Create one with: npx tsx scripts/hash-password.ts"; exit 1
+            fi
+            npx wrangler d1 execute silkroad-tours-db --local --command \
+              "INSERT INTO admin_users (email, name, password_hash, role) VALUES ('$ADMIN_EMAIL', 'Test admin', '$HASH', 'owner');"
+            echo "source=hash" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No admin account: add the repository secret PREVIEW_ADMIN_PASSWORD (or pass admin_password_hash) to sign in to /admin."
+            echo "source=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open the public test link (Cloudflare Quick Tunnel)
+        id: tunnel
+        run: |
+          curl -sSL -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
+          ./cloudflared tunnel --no-autoupdate --url http://localhost:8787 > tunnel.log 2>&1 &
+          for i in $(seq 1 60); do
+            url=$(grep -Eo 'https://[a-z0-9-]+\.trycloudflare\.com' tunnel.log | head -n 1 || true)
+            [ -n "$url" ] && break
+            sleep 2
+          done
+          [ -n "$url" ] || { echo "::error::The tunnel did not start"; cat tunnel.log; exit 1; }
+          for i in $(seq 1 45); do
+            if curl -sf "$url/api/health" > /dev/null; then break; fi
+            sleep 4
+          done
+          curl -sf "$url/api/health" > /dev/null || { echo "::error::$url does not answer"; exit 1; }
+          # Sign-in through the tunnel must pass the same-origin (CSRF) check: a wrong password → 401, not 403.
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$url/api/admin/auth/login" -H "origin: $url" \
+            -H "content-type: application/json" -d '{"email":"nobody@example.com","password":"wrong-password-123"}')
+          echo "Admin sign-in check through the tunnel: HTTP $code (401 expected)"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Test site::$url"
+
+      - name: Announce the link in an issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.tunnel.outputs.url }}
+          SOURCE: ${{ steps.admin.outputs.source }}
+          MINUTES: ${{ inputs.minutes }}
+        run: |
+          m=${MINUTES:-60}; [ "$m" -lt 10 ] && m=10; [ "$m" -gt 180 ] && m=180
+          until=$(date -u -d "+$m minutes" +"%H:%M UTC")
+          tashkent=$(TZ=Asia/Tashkent date -d "+$m minutes" +"%H:%M")
+          case "$SOURCE" in
+            secret) admin="Admin: \`$ADMIN_EMAIL\` — password: your repository secret PREVIEW_ADMIN_PASSWORD." ;;
+            hash) admin="Admin: \`$ADMIN_EMAIL\` — password: the one you were given privately (never posted here)." ;;
+            *) admin="No admin account this time: add the repository secret PREVIEW_ADMIN_PASSWORD to get one." ;;
+          esac
+          body=$(printf '%s\n' \
+            "**Test sayti / Test site:** $URL" \
+            "" \
+            "- Oʻzbekcha: $URL/uz" \
+            "- English: $URL/en" \
+            "- Русский: $URL/ru" \
+            "- Admin panel: $URL/admin" \
+            "" \
+            "$admin" \
+            "" \
+            "Online until **$until** (Toshkent $tashkent). Demo data only: bookings made here are deleted when the site switches off, and no Telegram messages are sent.")
+          number=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "Test sayti (preview) — run #$GITHUB_RUN_NUMBER" --body "$body" | grep -Eo '[0-9]+$')
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "minutes=$m" >> "$GITHUB_OUTPUT"
+          echo "Announced in issue #$number"
+
+      - name: Keep the test site online
+        env:
+          MINUTES: ${{ steps.issue.outputs.minutes }}
+          URL: ${{ steps.tunnel.outputs.url }}
+        run: |
+          end=$(( $(date +%s) + MINUTES * 60 ))
+          while [ "$(date +%s)" -lt "$end" ]; do
+            sleep 300
+            curl -sf "$URL/api/health" > /dev/null && echo "$(date -u +%H:%M) still online" || echo "$(date -u +%H:%M) health check failed"
+          done
+
+      - name: Close the announcement
+        if: always() && steps.issue.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ steps.issue.outputs.number }}
+        run: gh issue close "$NUMBER" --repo "$GITHUB_REPOSITORY" --comment "The test site has switched off. Run the **Preview (test link)** workflow again for a new link."
