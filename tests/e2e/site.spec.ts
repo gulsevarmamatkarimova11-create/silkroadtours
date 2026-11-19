@@ -79,7 +79,19 @@ test("tour page: live price, departure choice and a complete booking", async ({ 
   await expect(page.locator(total)).not.toHaveText(t1);
 
   await page.getByTestId(`${p}-type-group`).click();
-  await page.getByTestId(`${p}-departure-chip`).first().click();
+  // Pick the first departure that still has room for the 3 travellers (earlier test runs may have filled some).
+  const chips = page.getByTestId(`${p}-departure-chip`);
+  await expect(chips.first()).toBeVisible();
+  let picked = false;
+  for (let i = 0; i < (await chips.count()); i++) {
+    const seats = Number(/(\d+) seats? left/.exec((await chips.nth(i).textContent()) ?? "")?.[1] ?? 0);
+    if (seats >= 3) {
+      await chips.nth(i).click();
+      picked = true;
+      break;
+    }
+  }
+  expect(picked, "no departure chip with 3 free seats").toBe(true);
   await expect(page.getByTestId(`${p}-selected-departure`)).toBeVisible();
   await settledText(page, total);
   await page.getByTestId(`${p}-book`).click();
