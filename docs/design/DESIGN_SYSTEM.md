@@ -81,7 +81,7 @@ The original brief's turquoise and saffron fail as text on light backgrounds, so
 | Playfair Display (rejected) | ✅ | ✅ | ❌ | ✅ |
 | Prata (rejected) | ❌ | ✅ | ❌ | ❌ |
 
-Test strings "Oʻzbekiston", "Fargʻona" and "Самарканд" render in both families. Fonts are self-hosted by `next/font` with `display: swap` and metric-adjusted fallbacks (Georgia / system sans) to avoid layout shift.
+Test strings "Oʻzbekiston", "Fargʻona" and "Самарканд" render in both families. Fonts are self-hosted by `next/font`, the Latin files are preloaded, and both use `font-display: optional`: the preloaded font is normally ready within the ~100 ms block period; if it is late, that page view keeps the fallback rather than swapping mid-read. (With `swap`, the generated fallbacks depend on local Times New Roman/Arial; where those are missing — Android phones, Linux CI — long titles re-wrapped on swap and shifted the page by CLS 0.19.)
 
 **Scale:** modular ratio 1.25, base 17 px (Source Sans has a modest x-height). Display sizes are fluid with `clamp()`:
 
@@ -140,8 +140,8 @@ Lighthouse 12, mobile emulation (slow 4G, 4× CPU), median of 5 runs, Workers bu
 
 | Page | Performance | Accessibility | Best practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| `/en` | 0.98 | 1.00 | 1.00 | 1.00 | 1.1 s | 0.046 | 127 ms |
-| `/en/tours` | 0.99 | 0.98 | 1.00 | 1.00 | 1.1 s | 0.049 | 120 ms |
-| `/en/tours/classic-silk-road-8-days` | 0.94 | 1.00 | 1.00 | 1.00 | 1.1 s | 0.002 | 276 ms |
+| `/en` | 0.99 | 1.00 | 1.00 | 1.00 | 1.1 s | 0.000 | 123 ms |
+| `/en/tours` | 0.99 | 0.98 | 1.00 | 1.00 | 1.1 s | 0.000 | 97 ms |
+| `/en/tours/classic-silk-road-8-days` | 0.96 | 1.00 | 1.00 | 1.00 | 1.1 s | 0.000 | 211 ms |
 
-Rules that keep it there: no inline decorative SVG in repeated components; no route-level `loading.tsx` on content pages (it streams a skeleton first and delays LCP); fonts preloaded (Latin subset only); carousel, lightbox, calendar and map code loaded on demand; links don't prefetch by default.
+Rules that keep it there: no inline decorative SVG in repeated components; no route-level `loading.tsx` on content pages (it streams a skeleton first and delays LCP); fonts preloaded (Latin subset only) with `font-display: optional` (no swap shift on devices without Times New Roman/Arial); carousel, lightbox, calendar and map code loaded on demand; links don't prefetch by default.

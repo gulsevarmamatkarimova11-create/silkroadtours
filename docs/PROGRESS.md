@@ -73,9 +73,11 @@ Overview (KPIs, funnel, inbound/domestic split, top destinations, 30-day chart w
 | Playwright e2e + axe (`npm run test:e2e`) | desktop 1366×900 and mobile 390×844 | ✅ 66 passed (one mobile test timed out once under load and passed on re-run; CI retries once) |
 | axe (inside e2e) | 23 templates incl. admin | ✅ 0 serious/critical violations |
 | Crawl, 22 routes × 3 locales at 390 px | Workers preview | ✅ 63/63 pages: HTTP 200, correct `lang`, no raw message keys, no console errors, no horizontal scroll (the 3 intentional 404 pages return 404) |
-| Lighthouse CI (`lighthouserc.json`, 5 runs, median) | mobile, slow 4G, 4× CPU | ✅ Perf 0.98 / 0.99 / 0.94, A11y 1.00 / 0.98 / 1.00, BP 1.00, SEO 1.00, LCP 1.1 s, CLS ≤ 0.049 (home / tours / tour page) |
+| Lighthouse CI (`lighthouserc.json`, 5 runs, median) | mobile, slow 4G, 4× CPU | ✅ Perf 0.99 / 0.99 / 0.96, A11y 1.00 / 0.98 / 1.00, BP 1.00, SEO 1.00, LCP 1.1 s, CLS 0.000 (home / tours / tour page) |
 
 **Performance work** (details in DESIGN_SYSTEM.md §8): first measurement was Perf 0.67–0.78 with LCP up to 5.4 s. Causes found in the Lighthouse traces and fixed: inline SVG ornaments bloating HTML and the RSC payload (→ static files), a route-level `loading.tsx` streaming a skeleton before content (→ removed), fonts not preloaded, below-the-fold motion and heavy widgets loaded eagerly, links prefetching every route.
+
+**CI-only layout shift (fixed).** The first CI runs failed the tour page on CLS 0.187 (perf 0.88) while local runs showed 0.002. Both runs failed with the identical value, so it was deterministic, not noise. Cause: with `font-display: swap`, `next/font`'s fallback faces are built from local Times New Roman / Arial; the GitHub runner (like Android phones) lacks them, so the long Cormorant title re-wrapped when the webfont arrived and pushed the page down. Fix: `font-display: optional` with the existing preload — CLS is now 0.000 everywhere, including with fonts deliberately delayed 1.5 s. CI now also uploads `.lighthouseci` (a hidden folder `upload-artifact` skipped) and prints a per-page summary with layout-shift culprits (`scripts/lighthouse-summary.mjs`).
 
 **Lighthouse runs behind `scripts/compress-proxy.mjs`**: the local workerd preview sends HTML uncompressed while Cloudflare's edge compresses it in production; measuring uncompressed bytes would misrepresent real visitors.
 
