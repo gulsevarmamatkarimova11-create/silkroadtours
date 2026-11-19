@@ -111,6 +111,19 @@ describe("Turnstile and exchange rates", () => {
     assert.equal((await verifyTurnstile("tok", "", null, jsonFetch({ success: true }))).ok, false);
   });
 
+  it("answers Cloudflare's documented test secret keys without a network call", async () => {
+    const noNetwork = (async () => {
+      throw new Error("network must not be used for test keys");
+    }) as unknown as typeof fetch;
+    assert.deepEqual(await verifyTurnstile("XXXX.DUMMY.TOKEN.XXXX", "1x0000000000000000000000000000000AA", null, noNetwork), { ok: true });
+    assert.equal((await verifyTurnstile("tok", "2x0000000000000000000000000000000AA", null, noNetwork)).ok, false);
+    assert.equal((await verifyTurnstile("tok", "3x0000000000000000000000000000000AA", null, noNetwork)).ok, false);
+    // An empty token is refused even with the always-pass test key.
+    assert.equal((await verifyTurnstile("", "1x0000000000000000000000000000000AA", null, noNetwork)).ok, false);
+    // A real secret still goes to Cloudflare.
+    assert.deepEqual(await verifyTurnstile("tok", "0x4AAAAAAA-real-secret", null, jsonFetch({ success: false, "error-codes": ["invalid-input-secret"] })), { ok: false, codes: ["invalid-input-secret"] });
+  });
+
   it("converts Central Bank rates to a USD base", () => {
     const r = parseCbuRates([
       { Ccy: "USD", Nominal: "1", Rate: "11973.44" },

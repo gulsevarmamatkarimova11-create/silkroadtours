@@ -29,8 +29,6 @@ if [ ! -f .env ]; then
   cat > .env <<'EOF'
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA
-NEXT_PUBLIC_WHATSAPP_NUMBER=
-NEXT_PUBLIC_TELEGRAM_USERNAME=
 EOF
   echo "   Created .env (public build settings for local testing)."
 fi

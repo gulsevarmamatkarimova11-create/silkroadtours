@@ -9,4 +9,4 @@ export const routing = defineRouting({
   localeCookie: { name: "NEXT_LOCALE", maxAge: 60 * 60 * 24 * 365 },
 });
 
-export const CURRENCY_COOKIE = "CURRENCY";
+export { CURRENCY_COOKIE } from "../lib/currency";

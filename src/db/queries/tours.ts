@@ -565,3 +565,11 @@ export async function getTourForQuote(db: Db, slug: string, departureId?: number
   }
   return { ...tour, tiers, departure };
 }
+
+/** Distinct guide languages offered on published tours (ISO 639-1), for "Why travel with us". */
+export async function publishedGuideLanguages(db: Db): Promise<string[]> {
+  const rows = await db.all<{ lang: string }>(
+    sql`SELECT DISTINCT j.value AS lang FROM tours t, json_each(t.guide_languages) j WHERE t.is_published = 1 ORDER BY j.value`,
+  );
+  return rows.map((r) => r.lang);
+}
