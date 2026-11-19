@@ -354,7 +354,8 @@ export default async function TourPage({ params }: Props) {
             {prices.length > 0 && (
               <section aria-labelledby="prices">
                 <SectionHeading id="prices" title={t("tour.priceTable")} />
-                <div className="mt-6 overflow-x-auto rounded-[var(--radius-card)] border border-line bg-white">
+                {/* Focusable so keyboard users can scroll the table when it is wider than a small screen (WCAG 2.1.1). */}
+                <div tabIndex={0} role="region" aria-labelledby="prices" className="mt-6 overflow-x-auto rounded-[var(--radius-card)] border border-line bg-white">
                   <table className="w-full text-left" data-testid="price-table">
                     <thead className="bg-sand-soft text-sm">
                       <tr>
